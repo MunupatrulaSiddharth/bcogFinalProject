@@ -1,17 +1,10 @@
-# bcog-Final-Project
+# Abstract
 
-This is an experiment to study capacity of expertise knowledge vs non-expertise to identify the impression from objects.
+This study explores how design expertise influences the formation and articulation of impressions of inanimate objects, using synthetic car images as a case study. Impressions, which are automatic and often visceral, play a critical role in emotional design, particularly in fields like product and automotive design, where visual form is used to evoke specific emotions such as aggressiveness or friendliness. While prior research has examined impression formation in faces and other stimuli, little is known about how expertise shapes these processes in the context of object perception. This study addresses this gap by comparing the mental representations of design experts and non-experts using reverse correlation and computational modeling techniques.
 
-## Project Overview
+We hypothesize that design experts, due to their training in form-giving and emotional communication, will demonstrate more nuanced and higher-quality mental representations compared to non-experts. This study builds on foundational work in reverse correlation (Albohn et al., 2022) and computational modeling of perceptual judgments (Peterson et al., 2022), extending these methods to the domain of object perception.
 
-This project is part of a research study aimed at investigating how design experts and non-experts form impressions of inanimate objects, using synthetic cars as a case study. The goal is to determine whether and to what degree experts’ impression models differ from those of non-experts in terms of quality.
-
-### Key Research Question
-
-- **Do experts and non-experts differ in their mental representations of synthetic cars?**
-- Specifically, we aim to measure the **Idiosyncratic Mental Representation (IMR)** and **Target Mental Representation (TMR)** for each participant.
-
----
+The findings will advance psychological theories of impression formation while offering practical insights for design disciplines, where understanding the relationship between form and emotion is crucial for creating emotionally resonant products. By bridging psychological research and design practice, this study highlights the role of expertise in shaping how we perceive and interpret the visual world.
 
 ## Experiment Design
 
@@ -74,3 +67,12 @@ The primary focus of this project is the **analysis of participant data** to com
    - Generate summary reports and visualizations for presentation.
 
 ---
+
+## References
+
+- Albohn, D. N., Uddenberg, S. & Todorov, A. (2022). A data-driven, hyper-realistic method
+  for visualizing individual mental representations of faces. *Frontiers in Psychology*, *13*, 997498.
+
+- Peterson, J. C., Uddenberg, S., Griffiths, T. L., Todorov, A., & Suchow, J. W. (2022).
+  Deep models of superficial face judgments. *Proceedings of the National Academy of
+  Sciences*, *119*(17), e2115228119.
