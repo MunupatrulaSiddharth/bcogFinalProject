@@ -43,36 +43,92 @@ The primary focus of this project is the **analysis of participant data** to com
 
 ### Key Tasks
 
-1. **Data Preprocessing**:
+## Data Analysis Pipeline (`analyze.py`)
 
-   - Load and clean participant response data.
-   - Organize data into structured formats for analysis (e.g., Pandas DataFrames).
+### Core Functions
 
-2. **Computation of IMR and TMR**:
+1.  **Data Export & Transformation**
 
-   - Implement matrix arithmetic to compute IMR and TMR for each participant.
-   - Use NumPy for matrix operations and averaging.
+    - Exports SQLite database tables to CSV format
+    - Flattens nested JSON trial data into structured columns
+    - Handles large numeric values (seeds/timestamps) as text
 
-3. **Visualization**:
+2.  **Quality Control Checks**
 
-   - Generate visual representations of IMRs and TMRs using libraries like Matplotlib.
+    - **Screen Validation**: Removes participants with screen resolution <800×600px
+    - **Seriousness Filter**: Excludes participants with self-reported seriousness <70
+    - **Reliability Check**: Drops inconsistent responders (repeat trial correlation <0)
 
-4. **Statistical Analysis**:
+3.  **Output Generation**
 
-   - Compare IMRs and TMRs between experts and non-experts.
-   - Perform statistical tests (e.g., t-tests), cosine similarities to determine significant differences.
+    ```text
+    Data.csv                  # Raw database export
+    Data_expanded.csv         # All processed trials
+    participants_after_checks.csv  # Filtered participants
+    data_after_checks.csv     # Filtered raw trials
+    data_expanded_after_checks.csv # Filtered processed trials
+    ```
 
-5. **Output**:
-   - Save computed IMRs and TMRs to files for further analysis.
-   - Generate summary reports and visualizations for presentation.
+4.  **Computation of IMR and TMR**:
+
+    - Implement matrix arithmetic to compute IMR and TMR for each participant.
+    - Use NumPy for matrix operations and averaging.
+
+5.  **Visualization**:
+
+    - Generate visual representations of IMRs and TMRs using libraries like Matplotlib.
+
+6.  **Statistical Analysis**:
+
+    - Compare IMRs and TMRs between experts and non-experts.
+    - Perform statistical tests (e.g., t-tests), cosine similarities to determine significant differences.
+
+7.  **Output**:
+    - Save computed IMRs and TMRs to files for further analysis.
+    - Generate summary reports and visualizations for presentation.
+
+## Testing Component (`test_app_new.py`)
+
+This script performs comprehensive testing of the experimental application and data processing pipeline:
+
+1. **Application Testing**:
+
+   - Verifies correct rendering of car stimuli images
+   - Tests response recording functionality
+   - Validates trial sequence and timing
+   - Checks participant ID generation and session management
+
+2. **Data Processing Tests**:
+
+   - Validates JSON-to-CSV conversion accuracy
+   - Tests quality control filters (screen size, seriousness, reliability)
+   - Verifies correct computation of IMR/TMR values
+   - Checks output file generation and formatting
+
+3. **Statistical Testing**:
+
+   - Validates cosine similarity calculations
+   - Tests significance testing procedures
+   - Verifies visualization generation
+
+4. **Edge Case Handling**:
+
+   - Tests handling of incomplete/malformed data
+   - Verifies error handling for corrupt image files
+   - Tests recovery from interrupted sessions
+
+5. **Performance Testing**:
+   - Measures processing time for large datasets
+   - Tests memory usage during image rendering
+   - Verifies scalability with increasing participant numbers
 
 ---
 
 ## References
 
 - Albohn, D. N., Uddenberg, S. & Todorov, A. (2022). A data-driven, hyper-realistic method
-  for visualizing individual mental representations of faces. *Frontiers in Psychology*, *13*, 997498.
+  for visualizing individual mental representations of faces. _Frontiers in Psychology_, _13_, 997498.
 
 - Peterson, J. C., Uddenberg, S., Griffiths, T. L., Todorov, A., & Suchow, J. W. (2022).
-  Deep models of superficial face judgments. *Proceedings of the National Academy of
-  Sciences*, *119*(17), e2115228119.
+  Deep models of superficial face judgments. _Proceedings of the National Academy of
+  Sciences_, _119_(17), e2115228119.
