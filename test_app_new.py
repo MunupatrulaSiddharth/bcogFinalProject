@@ -472,7 +472,7 @@ def test_multiple_participants(num_participants=300):
 
 if __name__ == "__main__":
     logger.info("==== Starting test ====")
-    success = test_multiple_participants(num_participants=300)
+    success = test_multiple_participants(300)
     if success:
         logger.info("Test completed successfully!")
     else:
