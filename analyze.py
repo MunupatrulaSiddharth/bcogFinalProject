@@ -1,6 +1,10 @@
 import pandas as pd
 import sqlite3
 import json
+import numpy as np
+import os
+from pathlib import Path
+
 
 def process_data_table(conn):
     try:
@@ -116,54 +120,50 @@ def seriousness_self_report_check(df):
     return df[df['worker_id'].isin(passed_participants)]
 
 def response_reliability_check(df):
+    """Correlation-style reliability (-1 to +1) where:
+    +1 = perfect consistency
+    0 = random responding
+    -1 = perfect inconsistency
     """
-    Remove participants with mean reliability < 0 across repeat trials.
-    Compares responses to the same stimulus in original vs. repeat trials.
-    """
-    # Get all repeat trials and their original counterparts
-    repeat_trials = df[df['repeat'] == True]
-    original_trials = df[df['repeat'] == False]
-    
     reliability_scores = {}
     
     for worker_id in df['worker_id'].unique():
-        worker_repeats = repeat_trials[repeat_trials['worker_id'] == worker_id]
-        worker_originals = original_trials[original_trials['worker_id'] == worker_id]
+        worker_data = df[df['worker_id'] == worker_id]
+        repeats = worker_data[worker_data['repeat'] == True]
+        originals = worker_data[worker_data['repeat'] == False]
         
-        scores = []
+        if len(repeats) == 0:
+            continue  # Skip workers with no repeats
+            
+        comparisons = []
         
-        for _, repeat_row in worker_repeats.iterrows():
-            stimulus_num = repeat_row['stimulus_number']
-            repeat_response = repeat_row['response_label']
+        for _, repeat_row in repeats.iterrows():
+            stim_num = repeat_row['stimulus_number']
+            original_responses = originals[originals['stimulus_number'] == stim_num]['response_label']
             
-            # Find the original trial for this stimulus
-            original_response = worker_originals[
-                worker_originals['stimulus_number'] == stimulus_num
-            ]['response_label'].values
-            
-            if len(original_response) > 0:
-                original_response = original_response[0]
+            if len(original_responses) > 0:
+                original = original_responses.values[0]
+                repeat = repeat_row['response_label']
                 
-                # Skip "not sure" responses
-                if repeat_response == "not sure" or original_response == "not sure":
+                # Skip non-binary responses for correlation
+                if pd.isna(original) or pd.isna(repeat):
                     continue
-                
-                # Score +1 if consistent, -1 if inconsistent
-                score = 1 if repeat_response == original_response else -1
-                scores.append(score)
+                    
+                # Score +1 if match, -1 if mismatch
+                comparisons.append(1 if original == repeat else -1)
         
-        # Calculate mean reliability (if any valid comparisons exist)
-        if scores:
-            mean_reliability = sum(scores) / len(scores)
-            reliability_scores[worker_id] = mean_reliability
+        if comparisons:
+            reliability_scores[worker_id] = sum(comparisons) / len(comparisons)
     
-    # Filter participants with mean reliability >= 0
-    passed_participants = [
-        worker_id for worker_id, score in reliability_scores.items() 
-        if score >= 0
-    ]
+    # Filter participants with positive reliability
+    passed_participants = [wid for wid, score in reliability_scores.items() if score > 0]
+    
+    print(f"Reliability distribution (n={len(reliability_scores)}):")
+    print(pd.Series(reliability_scores).describe())
     
     return df[df['worker_id'].isin(passed_participants)]
+
+
 
 def create_output_files():
     database_path = 'database.db'
@@ -239,6 +239,91 @@ def create_output_files():
                 print('No trial data found to export')
         except Exception as e:
             print(f"Error processing Data table: {e}")
+
+
+
+def calculate_individual_averages(df, condition, latent_dir='latents', output_file='individual_average_latents.csv'):
+    
+    participant_info = pd.read_csv('Participant.csv')[['anon_id', 'worker_id', 'sona_id']]
+    
+    results = []
+    
+    for worker_id, participant_data in df.groupby('worker_id'):
+        latent_sums = {
+            f'{condition}_average': None,
+            f'no_{condition}_average': None,
+            'not_sure_average': None
+        }
+        counts = {
+            f'{condition}_average': 0,
+            f'no_{condition}_average': 0,
+            'not_sure_average': 0
+        }
+        
+        for _, trial in participant_data.iterrows():
+            if 'stimulus' not in trial or pd.isna(trial['stimulus']) or 'response' not in trial:
+                continue
+                
+            image_path = trial['stimulus']
+            image_name = os.path.basename(image_path)
+            
+            response = str(trial['response']).lower()
+            key_pressed = str(trial.get('key_name', '')).lower()
+            
+            if response == f"yes {condition}" or key_pressed == 'f':
+                avg_key = f'{condition}_average'
+            elif response == f"no {condition}" or key_pressed == 'j':
+                avg_key = f'no_{condition}_average'
+            elif response == "not sure" or key_pressed == 'space':
+                avg_key = 'not_sure_average'
+            else:
+                continue
+                
+            latent_path = os.path.join(latent_dir, f"{image_name}.npy")
+            try:
+                latent = np.load(latent_path)
+                
+                if latent_sums[avg_key] is None:
+                    latent_sums[avg_key] = latent.copy()
+                else:
+                    latent_sums[avg_key] += latent
+                    
+                counts[avg_key] += 1
+            except FileNotFoundError:
+                print(f"Warning: Latent file not found for image {image_name}")
+                continue
+                
+        participant_result = {'worker_id': worker_id}
+        
+        for key in latent_sums:
+            if counts[key] > 0:
+                participant_result[key] = latent_sums[key] / counts[key]
+            else:
+                participant_result[key] = None
+        
+        if (participant_result[f'{condition}_average'] is not None and 
+            participant_result[f'no_{condition}_average'] is not None and 
+            participant_result['not_sure_average'] is not None):
+            
+            participant_result['overall_participant_average'] = (
+                participant_result[f'{condition}_average'] - 
+                participant_result[f'no_{condition}_average'] + 
+                participant_result['not_sure_average']
+            )
+        else:
+            participant_result['overall_participant_average'] = None
+            
+        results.append(participant_result)
+    
+    results_df = pd.DataFrame(results)
+    
+    final_df = participant_info.merge(results_df, on='worker_id', how='right')
+    
+    output_columns = ['anon_id', 'worker_id', 'sona_id', 'overall_participant_average']
+    final_df[output_columns].to_csv(output_file, index=False)
+    
+    print(f"Successfully saved individual averages to {output_file}")
+    return final_df
 
 if __name__ == "__main__":
     create_output_files()

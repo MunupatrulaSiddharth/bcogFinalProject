@@ -179,15 +179,31 @@ def generate_realistic_trial_data(worker_id, condition):
     })
     
     # 5. Main trials (10 images)
-    image_numbers = list(range(10))
-    random.shuffle(image_numbers)
+    num_unique_images = 10
+    num_total_trials = 15  # We'll have 5 repeat trials
+    image_numbers = list(range(num_unique_images))
+    
+    # Create a list where some images will be repeated
+    trial_image_numbers = image_numbers.copy()
+    # Add 5 repeats by randomly selecting from the existing images
+    repeat_images = random.sample(image_numbers, 5)
+    trial_image_numbers.extend(repeat_images)
+    random.shuffle(trial_image_numbers)
+    
     responses = ["f", "j", "space"]
     response_labels = ["MDD", "no MDD", "not sure"]
     
-    for i, img_num in enumerate(image_numbers):
+    # Track which images we've seen to mark repeats
+    seen_images = {}
+    
+    for i, img_num in enumerate(trial_image_numbers):
         rt = random.randint(300, 1500)
         key_press = random.choice(responses)
         response_label = response_labels[responses.index(key_press)]
+        
+        # Determine if this is a repeat
+        is_repeat = img_num in seen_images
+        seen_images[img_num] = True  # Mark as seen
         
         trials.append({
             "rt": rt,
@@ -199,7 +215,7 @@ def generate_realistic_trial_data(worker_id, condition):
             "condition": condition,
             "experiment_phase": "main",
             "image_shown_count": 1,
-            "repeat": False,
+            "repeat": is_repeat,  # This will be True for repeat trials
             "trial_type": "single-stim-rev-cor-trial",
             "trial_index": 4 + i,  # Starts after initial trials
             "time_elapsed": trials[-1]["time_elapsed"] + rt,
@@ -219,7 +235,6 @@ def generate_realistic_trial_data(worker_id, condition):
             "anon_id": anon_id,
             "browser_events": []
         })
-    
     # 6. DMISS Survey
     dmiss_time = trials[-1]["time_elapsed"] + random.randint(10000, 20000)
     responses = {}
@@ -472,7 +487,7 @@ def test_multiple_participants(num_participants=300):
 
 if __name__ == "__main__":
     logger.info("==== Starting test ====")
-    success = test_multiple_participants(300)
+    success = test_multiple_participants(num_participants=300)
     if success:
         logger.info("Test completed successfully!")
     else:
