@@ -40,7 +40,7 @@ The primary focus of this project is the **analysis of participant data** to com
 
 ### Implementation Plan
 
-## Data Analysis Pipeline (`analyze.py`)
+## Data Analysis Pipeline (`analyze.ipynb`)
 
 ### Core Functions
 
