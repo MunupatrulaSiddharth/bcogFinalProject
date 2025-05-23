@@ -10,6 +10,23 @@ It is expected that visual representations of mental illness will systematically
 
 The findings have implications for understanding the visual basis of stigma and may inform future interventions aimed at reducing misperceptions of mental illness.
 
+## Running the project
+
+- Download modeling-tools repo and using NCSA Jupyter resources(https://jupyter.ncsa.illinois.edu/).
+- Place the analysis.ipynb in a folder called "notebooks" in the modeling-tools repo.
+- Place the Data, Latents file in the folder where the analysis.ipynb notebook is saved.
+- In the terminal, follow the following commands step by step:
+- conda init
+- source ~/.bashrc
+- upload the environment.yml file to your home directory
+- conda env create -f environment.yml --prefix=/home/mynetid/envs/pytorch
+- pip install the other packages
+- ninja
+- nvidia-cudnn-cu11==8.5.0.96
+- torch==1.12.1+cu116 torchvision==0.13.1+cu116 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+- Pillow==9.5.0
+- run the analysis.ipynb
+
 ## Experiment Design
 
 ### Task Description
@@ -38,7 +55,7 @@ The findings have implications for understanding the visual basis of stigma and 
 
 The primary focus of this project is the **analysis of participant data** to compute and visualize TMRs. The Python component will involve the following steps:
 
-### Implementation Plan
+### Implementation
 
 ## Data Analysis Pipeline (`analyze.ipynb`)
 
@@ -66,22 +83,13 @@ The primary focus of this project is the **analysis of participant data** to com
     data_expanded_after_checks.csv # Filtered processed trials
     ```
 
-4.  **Computation of TMR**: -- ToDo
+4.  **Computation of TMR**: -- Done
 
     - Implement matrix arithmetic to compute TMR for each participant.
     - Use NumPy for matrix operations and averaging.
     - Then do the same for across all participants.
 
-5.  **Visualization**: -- ToDo
-
-    - Generate visual representations of TMRs using libraries like Matplotlib.
-
-6.  **Statistical Analysis**: -- ToDo
-
-    - Perform statistical tests (e.g., t-tests), cosine similarities to determine significant differences.
-    - Visualize TMRs.
-
-7.  **Output**: -- ToDo
+5.  **Output**: -- Done
     - Save computed TMRs to files for further analysis.
     - Generate summary reports and visualizations for presentation.
 
@@ -95,18 +103,12 @@ This script performs comprehensive testing of the experimental application and d
    - Generates dummy data for data table
    - This data is generated exactly in the format that the frontend is saving data
 
-2. **Data Processing Tests**: -- Done first two
+2. **Data Processing Tests**: -- Done
 
    - Validates JSON-to-CSV conversion accuracy
    - Tests quality control filters (screen size, seriousness, reliability)
    - Verifies correct computation of TMR values
    - Checks output file generation and formatting
-
-3. **Statistical Testing**: -- ToDo
-
-   - Validates cosine similarity calculations
-   - Tests significance testing procedures
-   - Verifies visualization generation
 
 ---
 
